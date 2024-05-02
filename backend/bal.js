@@ -1,75 +1,50 @@
-const express = require("express");
-const cors = require("cors");
-const bodyParser = require("body-parser");
 const puppeteer = require("puppeteer-extra");
-const RecaptchaPlugin = require("puppeteer-extra-plugin-recaptcha");
+// const RecaptchaPlugin = require("puppeteer-extra-plugin-recaptcha");
 
-const app = express();
-app.use(bodyParser.json());
-app.use(cors());
-
-puppeteer.use(
-  RecaptchaPlugin({
-    provider: { id: "2captcha", token: "6fef2c73a3fe89c12946df5a46508f22" },
-  })
-);
-
-async function scrapeData(vehicleNumber) {
+async function scrapeData(url, carNumber, district) {
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
 
   try {
-    await page.goto("https://mtmis.excise.punjab.gov.pk/");
-    await page.type('input[name="car_number"]', vehicleNumber);
-    await page.type('input[name="district"]', vehicleNumber);
+    await page.goto(url);
 
-    await page.click("button[name='search_button']");
+    // Fill out the form inputs
+    await page.type('input[name="car_number"]', carNumber);
+    await page.type('input[name="district"]', district);
 
-    const vehicleNotFound = await page.evaluate(() => {
-      const messageElement = document.querySelector("p");
-      return messageElement ? messageElement.textContent.trim() : null;
-    });
+    // Submit the form
+    await page.click('button[name="search_button"]');
 
-    if (vehicleNotFound) {
-      return { error: "Vehicle not found" };
-    } else {
-      await page.waitForSelector(".sec2-lable");
+    // Wait for the search result
+    // await page.waitForTimeout(3000); // Adjust the timeout as needed
 
+    // Check if data is found
+    const dataExists = await page.$(".search-results");
+    if (dataExists) {
       const data = await page.evaluate(() => {
-        const labels = document.querySelectorAll(".sec2-lable");
-        const values = document.querySelectorAll(".sec2-data");
-        const result = {};
-
-        labels.forEach((label, index) => {
-          const key = label.textContent.trim();
-          const value = values[index].textContent.trim();
-          result[key] = value;
-        });
-
-        return { data: result };
+        // Extract data here
+        // Example: const result = document.querySelector('.search-results').innerText.trim();
+        // Adjust according to the structure of the search results
+        // Return the extracted data
+        return { message: "Data found" };
       });
-
       return data;
+    } else {
+      return { message: "No data found" };
     }
   } catch (error) {
+    console.error("An error occurred:", error);
     return { error: "An error occurred" };
   } finally {
     await browser.close();
   }
 }
 
-// app.post("/search", async (req, res) => {
-//   const { vehicleNumber } = req.body;
+// Example usage:
+const url = "https://excise.gob.pk/home/online-vehicle-verification-2/";
+const carNumber = "ABC123";
+const district = "quetta";
 
-//   try {
-//     const result = await scrapeData(vehicleNumber);
-//     res.json(result);
-//   } catch (error) {
-//     res.status(500).json({ error: "Internal server error" });
-//   }
-// });
-
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`Server is running on port http://localhost:${PORT}`);
+scrapeData(url, carNumber, district).then((result) => {
+  console.log(result);
 });
