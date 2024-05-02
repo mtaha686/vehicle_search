@@ -20,19 +20,13 @@ async function scrapeData(vehicleNumber) {
 
   try {
     await page.goto("https://mtmis.excise.punjab.gov.pk/");
-    await page.type('input[name="vhlno"]', vehicleNumber);
-    await page.waitForSelector(".search button:not([disabled])");
-    await page.click(".search button");
-    await page.waitForSelector(".g-recaptcha iframe");
-    const { solved, error } = await page.solveRecaptchas();
-    if (!solved) throw new Error(error);
-    await page.waitForSelector(".search button:not([disabled])");
-    await page.click(".search button");
+    await page.type('input[name="car_number"]', vehicleNumber);
+    await page.type('input[name="district"]', vehicleNumber);
+
+    await page.click("button[name='search_button']");
 
     const vehicleNotFound = await page.evaluate(() => {
-      const messageElement = document.querySelector(
-        'h4[style="color:#ff0000"]'
-      );
+      const messageElement = document.querySelector("p");
       return messageElement ? messageElement.textContent.trim() : null;
     });
 
@@ -64,16 +58,16 @@ async function scrapeData(vehicleNumber) {
   }
 }
 
-app.post("/search", async (req, res) => {
-  const { vehicleNumber } = req.body;
+// app.post("/search", async (req, res) => {
+//   const { vehicleNumber } = req.body;
 
-  try {
-    const result = await scrapeData(vehicleNumber);
-    res.json(result);
-  } catch (error) {
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
+//   try {
+//     const result = await scrapeData(vehicleNumber);
+//     res.json(result);
+//   } catch (error) {
+//     res.status(500).json({ error: "Internal server error" });
+//   }
+// });
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
