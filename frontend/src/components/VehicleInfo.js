@@ -14,14 +14,19 @@ const VehicleInfo = ({ data, error }) => {
     <div>
       <h2>Vehicle Record:</h2>
       <div className="table-responsive">
-        <table className="table">
+        <table
+          className="table"
+          style={{
+            rowGap: "5px",
+          }}
+        >
           <tbody>
             {Object.entries(data).map(([key, value]) => (
               <tr key={key}>
-                <td>
+                <td style={{ fontSize: " 0.7em" }}>
                   <strong>{key}:</strong>
                 </td>
-                <td>{value}</td>
+                <td style={{ fontSize: " 0.7em" }}>{value}</td>
               </tr>
             ))}
           </tbody>

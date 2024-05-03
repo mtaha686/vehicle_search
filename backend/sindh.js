@@ -24,11 +24,13 @@ async function automateForm(url, vehicleType, regNo) {
 
     await page.type("#reg_no", regNo);
     // Solve the reCAPTCHA
-    await page.waitForSelector("#rcaptcha iframe");
-    // Solve the reCAPTCHA
+    // await page.waitForSelector("#search_veh button:not([disabled])");
+    // await page.click(".#search_veh button");
+    await page.waitForSelector("iframe");
+    // await page.click("#recaptcha-token");
     const { solved, error } = await page.solveRecaptchas();
     if (!solved) throw new Error(error);
-
+    await page.waitForSelector("#search_veh button:not([disabled])");
     await page.click("#search_veh");
     await page.waitForSelector("#veh_res");
   } catch (error) {
@@ -40,7 +42,7 @@ async function automateForm(url, vehicleType, regNo) {
 
 // Example usage
 const url = "https://excise.gos.pk/vehicle/vehicle_search";
-const vehicleType = "four"; // or "two"
+const vehicleType = "two"; // or "two"
 const regNo = "ABC-123"; // Example registration number
 
 automateForm(url, vehicleType, regNo);
